@@ -1,0 +1,8 @@
+.git
+build
+data
+output
+scratch
+**/__pycache__
+*.exe
+*.zip
