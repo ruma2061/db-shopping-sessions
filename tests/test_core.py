@@ -113,8 +113,8 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(users[0]["top_category"], "a")
 
     def test_spaces_unicode_and_long_chain(self):
-        links = [[str(i), str(i+1)] for i in range(400)] + [["400", "�"], ["�", "Z"]]
-        users, _ = execute([event("a", START, "�"), event("b", START, " u ")], links=links)
+        links = [[str(i), str(i+1)] for i in range(400)] + [["400", "\u00e9"], ["\u00e9", "Z"]]
+        users, _ = execute([event("a", START, "\u00e9"), event("b", START, " u ")], links=links)
         self.assertEqual({r["user_id"] for r in users}, {"0", " u "})
 
     def test_empty(self):
