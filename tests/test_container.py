@@ -23,6 +23,10 @@ with tempfile.TemporaryDirectory() as tmp:
     os.chmod(root, 0o755)
     os.chmod(output, 0o777)
     os.chmod(scratch, 0o777)
+    # Host-owned table folders permit cleanup when the host UID differs from 1000.
+    for table in ("user_daily", "campaign_daily"):
+        (output / table).mkdir()
+        os.chmod(output / table, 0o777)
     for name, text in {
         "manifest.json": json.dumps({"window_start": "2026-10-01T00:00:00Z", "window_end": "2026-10-15T00:00:00Z"}),
         "products.csv": "product_id,category\np,books\n",
