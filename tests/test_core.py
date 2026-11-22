@@ -66,12 +66,17 @@ class CoreTests(unittest.TestCase):
         valid = ["2026-10-01T00:00:00Z", "2026-09-30T20:00:00-04:00", "000" + str(START)]
         invalid = ["2026-02-30T00:00:00Z", "2026-10-01t00:00:00Z", "2026-10-01T24:00:00Z",
                    "2026-10-01T00:00:00+24:00", "2026-10-01T00:00:00+05:60",
-                   "2026-10-01T00:00:00Z\r", "9" * 100, str(START) + ".0", "???", ""]
+                   "2026-10-01T00:00:00Z\r", "9" * 100, str(START) + ".0", "\u0662\u0665\u0660", ""]
         rows = []
         for i, stamp in enumerate(valid + invalid):
             r = event(str(i), START); r[2] = stamp; rows.append(r)
-        for i, price in enumerate(["0250", "10000000", "10000001", "0", "1000\r", "+1", "250"]):
+        for i, price in enumerate(["0250", "10000000", "10000001", "0", "1000\r", "+1", "\uff12\uff15\uff10"]):
             rows.append(event("price" + str(i), START, kind="purchase", price=price))
+        for row in rows:
+            with self.subTest(event_id=row[0], timestamp=row[2], price=row[6]):
+                single, _ = execute([row])
+                expected = row[0] in {"0", "1", "2", "price0", "price1"}
+                self.assertEqual(sum(int(r["events"]) for r in single), int(expected))
         users, _ = execute(rows)
         self.assertEqual(users[0]["events"], "5")
         self.assertEqual(users[0]["revenue_cents"], "10000250")
