@@ -21,4 +21,4 @@ jobs:
       - name: Build Linux image
         run: docker build --platform linux/amd64 -t shopping-sessions .
       - name: Restricted container smoke test
-        run: python tests/test_container.py
+        run: TEST_CPUS=2 TEST_MEM_GB=2 python tests/test_container.py
