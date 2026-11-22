@@ -7,6 +7,13 @@ import tempfile
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+# Defaults match scoring; overrides are for small local smoke tests only.
+cpus = int(os.environ.get("TEST_CPUS", "8"))
+memory_gb = int(os.environ.get("TEST_MEM_GB", "24"))
+if cpus < 1 or memory_gb < 1:
+    raise ValueError("TEST_CPUS and TEST_MEM_GB must be positive integers")
+print(f"Container smoke test: {cpus} CPUs, {memory_gb} GiB RAM", flush=True)
+
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
     data, output, scratch = (root / name for name in ("data", "output", "scratch"))
@@ -29,7 +36,8 @@ with tempfile.TemporaryDirectory() as tmp:
         path.write_bytes(text.encode())
     subprocess.run([
         "docker", "run", "--rm", "--network=none", "--read-only", "--user", "1000:1000",
-        "--cpus=8", "--memory=24g", "--memory-swap=24g", "--pids-limit=4096",
+        f"--cpus={cpus}", f"--memory={memory_gb}g", f"--memory-swap={memory_gb}g", "--pids-limit=4096",
+        "-e", f"NCPU={cpus}", "-e", f"MEM_GB={memory_gb}",
         "--tmpfs", "/tmp:rw,size=64m", "-v", f"{data}:/data:ro",
         "-v", f"{output}:/output", "-v", f"{scratch}:/scratch", "shopping-sessions",
     ], check=True)
